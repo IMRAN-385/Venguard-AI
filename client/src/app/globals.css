@@ -1,34 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-navy-950 text-slate-100 overflow-x-hidden;
-  }
+:root {
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+
+  --primary: #3B82F6;
+  --secondary: #10B981;
 }
 
-@layer utilities {
-  .glass-panel {
-    @apply bg-navy-900/80 backdrop-blur-md border border-navy-700/60 shadow-xl;
-  }
-  .border-glow {
-    @apply border border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)];
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Custom Scrollbar */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 16px;
+}
+
+.border-glow {
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #0B1120;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
   background: #334155;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
