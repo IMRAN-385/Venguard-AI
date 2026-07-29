@@ -1,35 +1,42 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        background: '#090D16',
-        card: '#111827',
-        cardHover: '#161F33',
-        primary: {
-          DEFAULT: '#3B82F6',
-          hover: '#2563EB',
-          light: '#60A5FA'
+        ink: {
+          50:  "#F5F5F6",
+          100: "#E4E4E7",
+          200: "#C7C7CC",
+          300: "#9A9AA2",
+          400: "#6E6E76",
+          500: "#4A4A52",
+          600: "#2A2A32",
+          700: "#1E1E24",
+          800: "#15151A",
+          900: "#0F0F13",
+          950: "#0A0A0B",
         },
-        emerald: {
-          DEFAULT: '#10B981',
-          light: '#34D399'
+        bone: {
+          50:  "#FAFAF7",
+          100: "#F0EFE9",
+          200: "#E2E0D6",
+          300: "#C9C6B8",
+          400: "#A8A493",
         },
-        amber: {
-          DEFAULT: '#F59E0B'
-        }
+        accent: {
+          DEFAULT: "#D7FF3A",
+          hover: "#C2E82F",
+        },
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Instrument Serif", "serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
-      boxShadow: {
-        'subtle': '0 4px 20px -2px rgba(0, 0, 0, 0.5)',
-        'elevated': '0 10px 40px -4px rgba(0, 0, 0, 0.7)',
-      }
     },
   },
   plugins: [],

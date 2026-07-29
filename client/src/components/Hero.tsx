@@ -1,220 +1,130 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Sparkles, ArrowRight, TrendingUp, CheckCircle2, Layers } from 'lucide-react';
+import Link from "next/link";
+import { ArrowUpRight, Eye, Play } from "lucide-react";
 
-export const Hero: React.FC<{ onOpenCopilot?: () => void }> = ({ onOpenCopilot }) => {
-  const [interactiveValuation, setInteractiveValuation] = useState<number>(25);
-  const [activeSimTab, setActiveSimTab] = useState<'roi' | 'risk'>('roi');
-
-  // Computed live simulation values
-  const ownershipEstimate = ((1.5 / interactiveValuation) * 100).toFixed(2);
-  const projectedMultiple = interactiveValuation < 30 ? 11.4 : 7.8;
-  const projectedExit = (interactiveValuation * projectedMultiple).toFixed(1);
-
+export function Hero() {
   return (
-    <section className="relative w-full min-h-[65vh] max-h-[78vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-navy-950 via-navy-900/90 to-navy-950 border-b border-navy-800 py-12 px-4 sm:px-6 lg:px-8">
-      
-      {/* Background Animated Glow & Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" />
-      <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-secondary/15 rounded-full blur-[100px] pointer-events-none" />
+    <section className="relative">
+      <div className="container-x pt-10 pb-24">
+        {/* Editorial panel — mirrors the Humanity Protocol layout */}
+        <div className="panel overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[85vh]">
+            {/* LEFT — Copy */}
+            <div className="lg:col-span-7 p-8 md:p-14 lg:p-20 flex flex-col justify-between">
+              <div>
+                <p className="eyebrow mb-8">
+                  [ Verify anything. Fund what's real. ]
+                </p>
 
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
-        
-        {/* Left Col: Hero Messaging & CTAs */}
-        <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-          
-          {/* Autonomous Banner */}
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-navy-800/90 border border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-xs font-semibold text-slate-200">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
-            </span>
-            <span className="text-primary-light font-bold">VANGUARD COPLOT v4.2</span>
-            <span className="text-slate-400">|</span>
-            <span>Autonomous DeepTech & Patent Verification Live</span>
-          </div>
+                <h1 className="display-serif text-display-xl mb-10">
+                  Introducing the<br />
+                  investor's<br />
+                  <span className="italic text-bone-200">trust layer</span>
+                </h1>
 
-          {/* Headline */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Autonomous Due Diligence for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-primary to-secondary">High-Conviction AI & DeepTech</span> Startups
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-            Eliminate weeks of manual spreadsheet audits. Vanguard AI continuously ingests live cap-tables, github repositories, patent filings, and burn metrics to generate institutional due diligence memorandums in seconds.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-            <Link
-              href="/explore"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold text-sm shadow-[0_0_25px_rgba(59,130,246,0.35)] transition-all transform hover:-translate-y-0.5"
-            >
-              <span>Explore Verified Startups</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            {onOpenCopilot ? (
-              <button
-                onClick={onOpenCopilot}
-                className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-navy-800/80 hover:bg-navy-700/90 border border-navy-700 text-slate-200 font-semibold text-sm transition-all shadow-sm"
-              >
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span>Chat with Vanguard Copilot</span>
-              </button>
-            ) : (
-              <Link
-                href="/ai/generator"
-                className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-navy-800/80 hover:bg-navy-700/90 border border-navy-700 text-slate-200 font-semibold text-sm transition-all"
-              >
-                <Sparkles className="w-4 h-4 text-secondary" />
-                <span>Run Autonomous Memo</span>
-              </Link>
-            )}
-          </div>
-
-          {/* Mini Trust Badges */}
-          <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-400 font-medium border-t border-navy-800/60">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-secondary" />
-              <span>$1.8B+ Assessed Capital</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-secondary" />
-              <span>SOC2 & USPTO Patent Validated</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-secondary" />
-              <span>Multi-LLM Tool Calling</span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Right Col: Interactive Valuation & ROI Simulation Card */}
-        <div className="lg:col-span-5 w-full">
-          <div className="glass-panel rounded-2xl p-6 border border-primary/30 shadow-[0_10px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
-            
-            {/* Card Header & Tabs */}
-            <div className="flex items-center justify-between pb-4 border-b border-navy-800 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-white block">Interactive Institutional Simulator</span>
-                  <span className="text-[10px] text-slate-400">Live Syndicate Allocation Model</span>
-                </div>
-              </div>
-              <div className="flex gap-1 bg-navy-950 p-1 rounded-lg border border-navy-800 text-[11px] font-semibold">
-                <button
-                  onClick={() => setActiveSimTab('roi')}
-                  className={`px-2.5 py-1 rounded transition-colors ${activeSimTab === 'roi' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  ROI Multiple
-                </button>
-                <button
-                  onClick={() => setActiveSimTab('risk')}
-                  className={`px-2.5 py-1 rounded transition-colors ${activeSimTab === 'risk' ? 'bg-accent text-navy-950 font-bold' : 'text-slate-400 hover:text-white'}`}
-                >
-                  Stress Test
-                </button>
-              </div>
-            </div>
-
-            {/* Simulation Content */}
-            {activeSimTab === 'roi' ? (
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-300 mb-1.5">
-                    <span>Target Pre-Money Valuation:</span>
-                    <span className="text-primary-light font-bold text-sm">${interactiveValuation}M USD</span>
+                {/* Info chip like reference "View More" card */}
+                <div className="max-w-md rounded-2xl bg-ink-800/60 border border-ink-600/50 p-5 mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="tag">View More</span>
+                    <Eye className="w-4 h-4 text-bone-300" />
                   </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="120"
-                    step="5"
-                    value={interactiveValuation}
-                    onChange={(e) => setInteractiveValuation(Number(e.target.value))}
-                    className="w-full h-2 bg-navy-950 rounded-lg appearance-none cursor-pointer accent-primary"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                    <span>$10M (Seed)</span>
-                    <span>$60M (Series A)</span>
-                    <span>$120M (Growth)</span>
-                  </div>
-                </div>
-
-                {/* Simulation Output Metrics */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-navy-950/80 p-3 rounded-xl border border-navy-800">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">$1.5M Syndicate Stake</span>
-                    <span className="text-lg font-extrabold text-white mt-0.5 block">{ownershipEstimate}% Equity</span>
-                    <span className="text-[10px] text-secondary font-medium">Optimal Governance Rights</span>
-                  </div>
-                  <div className="bg-navy-950/80 p-3 rounded-xl border border-navy-800">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Projected Exit Multiple</span>
-                    <span className="text-lg font-extrabold text-secondary mt-0.5 block">{projectedMultiple}x Multiple</span>
-                    <span className="text-[10px] text-slate-400">${projectedExit}M Implied Exit</span>
-                  </div>
-                </div>
-
-                <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 text-xs text-slate-300 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-primary-light block">Autonomous Verdict: High Conviction</span>
-                    <span className="text-[11px] text-slate-400">Unit economics align with Tier-1 deeptech hurdles.</span>
-                  </div>
-                  <Link
-                    href="/ai/generator"
-                    className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold text-xs shadow-sm transition-all shrink-0"
-                  >
-                    Run Memo
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-navy-950/90 p-3.5 rounded-xl border border-accent/40 text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-accent-light flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5" />
-                      Macroeconomic Stress Simulation
-                    </span>
-                    <span className="bg-accent/20 text-accent font-extrabold px-2 py-0.5 rounded text-[10px]">92.4% Survival</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Under a simulated +25% cloud infrastructure cost inflation scenario, this target asset maintains over 16 months of runway with positive cash-flow buffer.
+                  <p className="text-sm text-bone-200 leading-relaxed">
+                    From cap-tables to GitHub commits, Vanguard verifies deeptech
+                    startups end-to-end — without you touching a spreadsheet.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-navy-950 p-2.5 rounded-xl border border-navy-800 text-center">
-                    <span className="text-[10px] text-slate-400 block">Patent Defense Score</span>
-                    <span className="text-sm font-bold text-white">96 / 100 (Fortified)</span>
+                {/* CTAs */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/explore" className="btn-primary">
+                    Get Started <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                  <Link href="/docs" className="btn-link">
+                    Here's How It Works →
+                  </Link>
+                </div>
+              </div>
+
+              {/* Bottom demo quote */}
+              <div className="hidden lg:flex items-center gap-3 mt-16">
+                <div className="w-10 h-10 rounded-full bg-ink-700 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-bone-100 ml-0.5" />
+                </div>
+                <div>
+                  <p className="text-xs text-bone-300">
+                    "A quick demo of the platform in action."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT — Visual */}
+            <div className="relative lg:col-span-5 min-h-[400px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-ink-600/40 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-950 overflow-hidden">
+              {/* Huge ghost wordmark */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none">
+                <span className="font-display text-[14rem] leading-none tracking-tighter">
+                  VNGRD
+                </span>
+              </div>
+
+              {/* Central visual — abstract "AI head" via layered SVG rings */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-[380px] h-[380px]">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="absolute inset-0 rounded-full border border-bone-200/10"
+                      style={{
+                        transform: `scale(${1 - i * 0.15})`,
+                        animation: `spin ${20 + i * 5}s linear infinite ${i % 2 ? 'reverse' : ''}`,
+                      }}
+                    />
+                  ))}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-accent/40 to-accent/5 blur-2xl" />
                   </div>
-                  <div className="bg-navy-950 p-2.5 rounded-xl border border-navy-800 text-center">
-                    <span className="text-[10px] text-slate-400 block">Cap-Table Cleanliness</span>
-                    <span className="text-sm font-bold text-secondary">Verified Clean</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-[10px] uppercase tracking-[0.3em] text-bone-300 mb-2">
+                        Agent Cluster
+                      </div>
+                      <div className="font-display text-5xl text-bone-50">
+                        v4<span className="text-accent">.</span>2
+                      </div>
+                      <div className="text-xs text-bone-400 mt-2">
+                        6 agents online
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Visual flow indicator */}
-            <div className="pt-3 text-center">
-              <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-semibold animate-pulse">
-                Scroll Down For Live Autonomous Feed & Verified Assets ↓
-              </span>
+              {/* Vertical pagination dots — like reference "01 ... 05" */}
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-[10px] font-mono text-bone-300">
+                <span>01</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                <div className="w-1.5 h-1.5 rounded-full bg-ink-600" />
+                <div className="w-1.5 h-1.5 rounded-full bg-ink-600" />
+                <div className="w-1.5 h-1.5 rounded-full bg-ink-600" />
+                <span>05</span>
+              </div>
+
+              {/* Bottom-right sys label */}
+              <div className="absolute bottom-6 right-6 text-[10px] font-mono text-bone-400">
+                //scroll_to_start_analysis
+              </div>
             </div>
-
           </div>
         </div>
-
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg) scale(var(--s, 1)); }
+          to   { transform: rotate(360deg) scale(var(--s, 1)); }
+        }
+      `}</style>
     </section>
   );
-};
+}

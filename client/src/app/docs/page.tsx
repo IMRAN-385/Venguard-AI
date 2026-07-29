@@ -1,224 +1,155 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  BookOpen,
-  Key,
-  LineChart,
-  Sparkles,
-  Webhook,
-  ChevronRight,
-} from "lucide-react";
+import Link from "next/link";
+import { Search, BookOpen, Cpu, Terminal, Zap, ShieldCheck, ArrowUpRight, ChevronRight } from "lucide-react";
+import { CopilotFAB } from "@/components/CopilotFAB";
 
-interface DocSection {
-  id: string;
-  title: string;
-  icon: React.ElementType;
-  items: { title: string; content: string }[];
-}
-
-const sections: DocSection[] = [
+const sections = [
   {
     id: "getting-started",
+    icon: Zap,
     title: "Getting Started",
-    icon: BookOpen,
     items: [
-      {
-        title: "Creating an account",
-        content:
-          "Register with your email and set up your workspace. Once verified, you land on the Explore page with live asset data already loaded.",
-      },
-      {
-        title: "Adding your first asset",
-        content:
-          "Go to Items → Add, fill in the asset name, sector, and valuation details. Assets appear in Manage instantly and are searchable across the platform.",
-      },
+      { title: "Quickstart",           slug: "quickstart",  time: "3 min" },
+      { title: "Your first memo",      slug: "first-memo",  time: "5 min" },
+      { title: "Connecting a data room", slug: "data-room", time: "8 min" },
     ],
   },
   {
-    id: "authentication",
-    title: "Authentication",
-    icon: Key,
+    id: "agents",
+    icon: Cpu,
+    title: "Agent Reference",
     items: [
-      {
-        title: "API keys",
-        content:
-          "Generate a key from Settings → API. Keys are scoped to your workspace and can be rotated at any time without affecting active sessions.",
-      },
-      {
-        title: "Session handling",
-        content:
-          "Vanguard uses short-lived JWTs with silent refresh. Tokens are stored in httpOnly cookies, so no client-side token handling is needed.",
-      },
+      { title: "Agent 01 · Memo generator",      slug: "agent-01", time: "6 min" },
+      { title: "Agent 02 · Matching engine",      slug: "agent-02", time: "4 min" },
+      { title: "Agent 03 · Copilot",              slug: "agent-03", time: "7 min" },
+      { title: "Agent 04 · Data analyzer",        slug: "agent-04", time: "5 min" },
+      { title: "Agent 05 · Auto-classification",  slug: "agent-05", time: "3 min" },
+      { title: "Agent 06 · Multi-LLM router",     slug: "agent-06", time: "4 min" },
     ],
   },
   {
-    id: "portfolio",
-    title: "Portfolio & Recommendations",
-    icon: LineChart,
+    id: "api",
+    icon: Terminal,
+    title: "API Reference",
     items: [
-      {
-        title: "Smart recommendations",
-        content:
-          "The Portfolio page ranks assets against your holdings using sector correlation and volatility scoring, refreshed every trading session.",
-      },
-      {
-        title: "Filtering and sorting",
-        content:
-          "Explore supports filtering by sector, price range, and risk tier, plus sorting by performance, name, or date added.",
-      },
+      { title: "Authentication",       slug: "auth",        time: "3 min" },
+      { title: "Assets endpoints",     slug: "assets-api",  time: "6 min" },
+      { title: "AI endpoints",         slug: "ai-api",      time: "8 min" },
+      { title: "Webhooks",             slug: "webhooks",    time: "4 min" },
     ],
   },
   {
-    id: "ai-tools",
-    title: "AI Tools",
-    icon: Sparkles,
+    id: "compliance",
+    icon: ShieldCheck,
+    title: "Security & Compliance",
     items: [
-      {
-        title: "Copilot",
-        content:
-          "Ask Copilot natural-language questions about any asset or sector. It answers using live market context, not static training data.",
-      },
-      {
-        title: "Memo Generator",
-        content:
-          "Generate structured investment memos for any asset by choosing a tone — formal, concise, or bullish — and letting the model draft it.",
-      },
-      {
-        title: "Data Analyzer",
-        content:
-          "Upload a CSV or spreadsheet of asset data to get a plain-English summary, key metrics, and notable insights.",
-      },
-    ],
-  },
-  {
-    id: "webhooks",
-    title: "Webhooks",
-    icon: Webhook,
-    items: [
-      {
-        title: "Setting up a webhook",
-        content:
-          "Register an endpoint under Settings → Webhooks to receive events for asset updates, portfolio changes, and price alerts.",
-      },
-      {
-        title: "Event payloads",
-        content:
-          "Every payload includes an event type, timestamp, and signed signature header so you can verify the request came from Vanguard.",
-      },
+      { title: "SOC 2 posture",         slug: "soc2",         time: "5 min" },
+      { title: "Data retention policy", slug: "retention",    time: "3 min" },
+      { title: "LLM proxying model",    slug: "llm-proxy",    time: "4 min" },
     ],
   },
 ];
 
 export default function DocsPage() {
-  const [query, setQuery] = useState("");
-  const [activeSection, setActiveSection] = useState(sections[0].id);
-
-  const filteredSections = sections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(query.toLowerCase()) ||
-          item.content.toLowerCase().includes(query.toLowerCase())
-      ),
-    }))
-    .filter((section) => section.items.length > 0 || query === "");
+  const [q, setQ] = useState("");
+  const filter = q.trim().toLowerCase();
 
   return (
-    <div className="min-h-screen bg-[#080612] text-white">
-      <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-[240px_1fr] gap-16">
-        {/* Sidebar */}
-        <aside className="md:sticky md:top-16 h-fit">
-          <div className="relative mb-8">
-            <Search className="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" />
+    <div className="container-x pt-10 pb-24">
+      {/* Hero */}
+      <div className="panel p-12 md:p-16 mb-8 relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-[0.04] pointer-events-none select-none">
+          <BookOpen className="w-96 h-96" strokeWidth={0.5} />
+        </div>
+        <div className="relative max-w-2xl">
+          <p className="eyebrow mb-4">[ Documentation ]</p>
+          <h1 className="display-serif text-display-lg mb-6">
+            Everything you need to<br />
+            <span className="italic text-bone-200">ship with Vanguard.</span>
+          </h1>
+          <div className="relative max-w-lg">
+            <Search className="w-4 h-4 text-bone-300 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search docs..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-sm placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.07] transition-colors"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search docs…"
+              className="field pl-11"
             />
           </div>
-
-          <nav className="space-y-1">
-            {sections.map((s) => {
-              const Icon = s.icon;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    setActiveSection(s.id);
-                    setQuery("");
-                    document
-                      .getElementById(s.id)
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors ${
-                    activeSection === s.id
-                      ? "bg-violet-600/15 text-white border border-violet-500/30"
-                      : "text-white/45 hover:text-white/80 hover:bg-white/[0.04] border border-transparent"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {s.title}
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Content */}
-        <main className="space-y-20">
-          <div>
-            <p className="text-violet-400 text-xs font-semibold tracking-[0.15em] uppercase mb-4">
-              Documentation
-            </p>
-            <h1 className="text-4xl font-semibold mb-4 tracking-tight">
-              Build with Vanguard.
-            </h1>
-            <p className="text-white/50 leading-relaxed max-w-xl">
-              Everything you need to integrate assets, AI tools, and portfolio data
-              into your own workflow.
-            </p>
-          </div>
-
-          {filteredSections.length === 0 && (
-            <p className="text-white/40 text-sm">No results for &quot;{query}&quot;.</p>
-          )}
-
-          {filteredSections.map((section) => {
-            const Icon = section.icon;
-            return (
-              <section key={section.id} id={section.id} className="scroll-mt-20">
-                <div className="flex items-center gap-2.5 mb-6 pb-3 border-b border-white/10">
-                  <Icon className="w-4 h-4 text-violet-400" />
-                  <h2 className="text-lg font-semibold tracking-tight">
-                    {section.title}
-                  </h2>
-                </div>
-
-                <div className="space-y-2.5">
-                  {section.items.map((item) => (
-                    <details
-                      key={item.title}
-                      className="group bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 transition-colors hover:border-white/20 hover:bg-white/[0.05] open:bg-white/[0.05] open:border-violet-500/20"
-                    >
-                      <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium marker:content-none">
-                        <span>{item.title}</span>
-                        <ChevronRight className="w-4 h-4 text-white/30 shrink-0 ml-4 group-open:rotate-90 group-open:text-violet-400 transition-transform" />
-                      </summary>
-                      <p className="text-sm text-white/55 leading-relaxed mt-3 pt-3 border-t border-white/[0.06]">
-                        {item.content}
-                      </p>
-                    </details>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </main>
+        </div>
       </div>
+
+      {/* Quick links */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
+        {[
+          { icon: Zap,      label: "Quickstart",       href: "#getting-started" },
+          { icon: Cpu,      label: "Agent SDK",        href: "#agents" },
+          { icon: Terminal, label: "API reference",    href: "#api" },
+          { icon: ShieldCheck, label: "Security docs", href: "#compliance" },
+        ].map((q) => {
+          const Icon = q.icon;
+          return (
+            <a key={q.label} href={q.href} className="panel p-5 flex items-center gap-3 hover:bg-ink-800 transition">
+              <div className="w-10 h-10 rounded-xl bg-ink-800 border border-ink-600/60 flex items-center justify-center">
+                <Icon className="w-4 h-4 text-accent" />
+              </div>
+              <span className="text-sm text-bone-100">{q.label}</span>
+              <ChevronRight className="w-4 h-4 text-bone-400 ml-auto" />
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Sections */}
+      <div className="space-y-10">
+        {sections.map((section) => {
+          const Icon = section.icon;
+          const items = filter
+            ? section.items.filter((i) => i.title.toLowerCase().includes(filter))
+            : section.items;
+          if (filter && items.length === 0) return null;
+
+          return (
+            <section key={section.id} id={section.id}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-ink-800 border border-ink-600/60 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-accent" />
+                </div>
+                <h2 className="font-display text-3xl text-bone-50">{section.title}</h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                {items.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/docs#${item.slug}`}
+                    className="panel p-5 flex items-center justify-between hover:bg-ink-800 transition group"
+                  >
+                    <div>
+                      <div className="text-sm font-medium text-bone-50 group-hover:text-accent transition mb-0.5">
+                        {item.title}
+                      </div>
+                      <div className="text-[11px] text-bone-400 font-mono">{item.time} read</div>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-bone-300 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      {filter && sections.every((s) => !s.items.some((i) => i.title.toLowerCase().includes(filter))) && (
+        <div className="panel p-16 text-center mt-10">
+          <p className="font-display text-2xl text-bone-50 mb-2">Nothing matched "{q}"</p>
+          <p className="text-bone-300 mb-6">Ask the Copilot — it's trained on the full documentation.</p>
+        </div>
+      )}
+
+      <CopilotFAB />
     </div>
   );
 }

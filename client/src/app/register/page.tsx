@@ -1,164 +1,163 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
-import { Shield, User, Mail, Lock, UserPlus, AlertCircle, Award, CheckSquare, Square } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Mail, Lock, User, Building2, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { AuthShell } from "@/components/AuthShell";
+import { GoogleButton } from "@/components/GoogleButton";
 
 export default function RegisterPage() {
-  const { register, error, clearError } = useAuth();
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [riskTolerance, setRiskTolerance] = useState<'Conservative' | 'Moderate' | 'Aggressive'>('Moderate');
-  const [selectedSectors, setSelectedSectors] = useState<string[]>(['Generative AI', 'Quantum Computing']);
-  const [validationError, setValidationError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
+  const [form, setForm] = useState({ name: "", firm: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const availableSectors = ['Generative AI', 'Quantum Computing', 'Biotech & Genomics', 'Robotics & Automation', 'CleanTech & Fusion'];
+  const passwordChecks = [
+    { label: "8+ characters",       ok: form.password.length >= 8 },
+    { label: "Uppercase letter",    ok: /[A-Z]/.test(form.password) },
+    { label: "Number or symbol",    ok: /[0-9!@#$%^&*]/.test(form.password) },
+  ];
 
-  const toggleSector = (sector: string) => {
-    if (selectedSectors.includes(sector)) {
-      setSelectedSectors(selectedSectors.filter(s => s !== sector));
-    } else {
-      setSelectedSectors([...selectedSectors, sector]);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setValidationError('');
-    clearError();
+    setError("");
+    if (!form.name || !form.email || !form.password) return setError("All required fields must be filled.");
+    if (form.password.length < 8) return setError("Password must be at least 8 characters.");
 
-    if (!name.trim() || !email.trim() || !password) {
-      setValidationError('All account fields are required.');
-      return;
+    setLoading(true);
+    try {
+      await register(form.email, form.password, form.name);
+      router.push("/portfolio");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-    if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setValidationError('Passwords do not match. Please verify.');
-      return;
-    }
+  }
 
-    setIsSubmitting(true);
-    const success = await register({
-      name,
-      email,
-      password,
-      riskTolerance,
-      preferredSectors: selectedSectors.length > 0 ? selectedSectors : ['Generative AI']
-    });
-    setIsSubmitting(false);
-
-    if (success) {
-      router.push('/portfolio');
-    }
-  };
+  function update<K extends keyof typeof form>(key: K, value: string) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
 
   return (
-    <div className="w-full min-h-[90vh] bg-navy-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[300px] bg-secondary/15 rounded-full blur-[140px] pointer-events-none" />
+    <AuthShell
+      eyebrow="[ Request access ]"
+      title="Join the network."
+      subtitle="Create your Vanguard investor account."
+      footer={
+        <p className="text-sm text-bone-300">
+          Already onboarded?{" "}
+          <Link href="/login" className="text-accent hover:underline">Sign in</Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <GoogleButton label="Sign up with Google" onSuccess={() => router.push("/portfolio")} />
 
-      <div className="max-w-2xl w-full glass-panel rounded-3xl p-8 sm:p-10 border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative z-10 space-y-6">
-        <div className="text-center space-y-2">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md"><Shield className="w-6 h-6" /></div>
-            <span className="font-extrabold text-xl tracking-tight text-white">VANGUARD <span className="text-primary font-bold">AI</span></span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight pt-2">Register Institutional Account & Investor Profile</h1>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">Your risk profile directly informs our Autonomous Smart Recommendation Engine (`Feature B`).</p>
+        <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-bone-400">
+          <div className="flex-1 h-px bg-ink-600/40" />
+          or with email
+          <div className="flex-1 h-px bg-ink-600/40" />
         </div>
 
-        {(validationError || error) && (
-          <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2.5 animate-fadeIn">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <div className="flex-1"><span className="font-bold block">Registration Error</span><span>{validationError || error}</span></div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="eyebrow block mb-2">Full name</label>
+            <div className="relative">
+              <User className="w-4 h-4 text-bone-300 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Ada Lovelace"
+                className="field pl-11"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="eyebrow block mb-2">Firm (optional)</label>
+            <div className="relative">
+              <Building2 className="w-4 h-4 text-bone-300 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                value={form.firm}
+                onChange={(e) => update("firm", e.target.value)}
+                placeholder="Meridian Ventures"
+                className="field pl-11"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="eyebrow block mb-2">Work email</label>
+          <div className="relative">
+            <Mail className="w-4 h-4 text-bone-300 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => update("email", e.target.value)}
+              placeholder="you@fund.com"
+              className="field pl-11"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="eyebrow block mb-2">Password</label>
+          <div className="relative">
+            <Lock className="w-4 h-4 text-bone-300 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => update("password", e.target.value)}
+              placeholder="••••••••"
+              className="field pl-11"
+              required
+            />
+          </div>
+
+          {form.password.length > 0 && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {passwordChecks.map((c) => (
+                <div
+                  key={c.label}
+                  className={`flex items-center gap-1.5 text-[11px] ${c.ok ? "text-accent" : "text-bone-400"}`}
+                >
+                  <CheckCircle2 className={`w-3 h-3 ${c.ok ? "opacity-100" : "opacity-30"}`} />
+                  {c.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/30">
+            <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-orange-200">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Full Name & Institutional Title</label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input type="text" required placeholder="e.g., Marcus Vance (Senior Venture Partner)" value={name} onChange={(e) => { setName(e.target.value); setValidationError(''); }} className="w-full pl-10 pr-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-              </div>
-            </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-accent w-full justify-center disabled:opacity-40"
+        >
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account…</> : "Create account"}
+        </button>
 
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Institutional Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input type="email" required placeholder="e.g., marcus@vanguard-ai.io" value={email} onChange={(e) => { setEmail(e.target.value); setValidationError(''); }} className="w-full pl-10 pr-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Password (Min 6 chars)</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input type="password" required placeholder="••••••••••••" value={password} onChange={(e) => { setPassword(e.target.value); setValidationError(''); }} className="w-full pl-10 pr-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Confirm Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input type="password" required placeholder="••••••••••••" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setValidationError(''); }} className="w-full pl-10 pr-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-navy-950/80 rounded-2xl p-5 border border-navy-800 space-y-4">
-            <div className="flex items-center gap-2 border-b border-navy-800 pb-2.5">
-              <Award className="w-4 h-4 text-secondary" />
-              <span className="font-extrabold text-xs text-white uppercase tracking-wider">Step 2: Investor Profile Configuration</span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-2">Target Risk Tolerance & Hurdle Rate</label>
-              <div className="grid grid-cols-3 gap-2.5">
-                {(['Conservative', 'Moderate', 'Aggressive'] as const).map((level) => (
-                  <button key={level} type="button" onClick={() => setRiskTolerance(level)} className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${riskTolerance === level ? 'bg-primary text-white border-primary shadow-md' : 'bg-navy-900 border-navy-800 text-slate-400 hover:text-white'}`}>{level}</button>
-                ))}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1.5">* Conservative prioritizes 90+ AI safety scores; Aggressive highlights early Seed 20x+ upside targets.</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-2">Preferred DeepTech Investment Sectors</label>
-              <div className="flex flex-wrap gap-2">
-                {availableSectors.map((sector) => {
-                  const isChecked = selectedSectors.includes(sector);
-                  return (
-                    <button key={sector} type="button" onClick={() => toggleSector(sector)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${isChecked ? 'bg-secondary/20 text-secondary border-secondary/40' : 'bg-navy-900 border-navy-800 text-slate-400 hover:text-white'}`}>
-                      {isChecked ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
-                      <span>{sector}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold text-xs shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all flex items-center justify-center gap-2">
-            <UserPlus className="w-4 h-4" />
-            <span>{isSubmitting ? 'Creating Investor Account...' : 'Complete Registration & View Smart Matches'}</span>
-          </button>
-        </form>
-
-        <div className="text-center pt-2 border-t border-navy-800 text-xs text-slate-400">
-          Already part of the syndicate? <Link href="/login" className="text-primary font-bold hover:underline">Sign In Here</Link>
-        </div>
-      </div>
-    </div>
+        <p className="text-[11px] text-bone-400 text-center leading-relaxed">
+          By continuing you agree to Vanguard's{" "}
+          <Link href="/docs" className="text-bone-200 hover:text-accent underline">Terms</Link>{" "}
+          and{" "}
+          <Link href="/docs" className="text-bone-200 hover:text-accent underline">Privacy Policy</Link>.
+        </p>
+      </form>
+    </AuthShell>
   );
 }

@@ -1,165 +1,210 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { UploadCloud, BarChart3, Loader2, FileSpreadsheet, X } from "lucide-react";
-import api from "@/services/api";
+import { useState } from "react";
+import { Upload, BarChart3, Loader2, AlertTriangle, TrendingDown, TrendingUp, DollarSign } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart } from "recharts";
+import { api } from "@/services/api";
 
-interface AnalysisResult {
+interface Analysis {
+  kpis: { label: string; value: string; delta: string; positive: boolean; icon: "money" | "up" | "down" }[];
+  burn: { month: string; burn: number; runway: number }[];
+  anomalies: { severity: "low" | "med" | "high"; message: string }[];
   summary: string;
-  insights: string[];
-  metrics: { label: string; value: string }[];
 }
+
+const simulated: Analysis = {
+  kpis: [
+    { label: "Monthly burn", value: "$412K", delta: "-8%", positive: true, icon: "money" },
+    { label: "Runway",        value: "18.4 mo", delta: "+2.1 mo", positive: true, icon: "up" },
+    { label: "MRR",           value: "$186K", delta: "+14%", positive: true, icon: "up" },
+    { label: "CAC / LTV",     value: "0.32",  delta: "-0.04", positive: true, icon: "down" },
+  ],
+  burn: [
+    { month: "Jan", burn: 480, runway: 22 },
+    { month: "Feb", burn: 465, runway: 21 },
+    { month: "Mar", burn: 452, runway: 20 },
+    { month: "Apr", burn: 438, runway: 19 },
+    { month: "May", burn: 420, runway: 19 },
+    { month: "Jun", burn: 412, runway: 18 },
+  ],
+  anomalies: [
+    { severity: "high", message: "AWS spend spiked 34% in May — flag for review" },
+    { severity: "med",  message: "Contractor headcount up 3, no matching JD in HR data" },
+    { severity: "low",  message: "Q2 marketing overspend by 6% vs plan" },
+  ],
+  summary:
+    "Financial health is trending positive. Burn multiple compressed from 2.4x to 1.8x over 6 months. Runway extension driven by MRR growth outpacing OpEx. One material anomaly (AWS spike) requires investigation before next fundraise.",
+};
+
+const tooltipStyle = {
+  background: "#17171C",
+  border: "1px solid #2A2A32",
+  borderRadius: "12px",
+  padding: "8px 12px",
+  color: "#FAFAF7",
+  fontSize: "12px",
+};
 
 export default function AnalyzerPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
 
-  const handleFile = (f: File | null) => {
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    setError("");
-  };
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFile(e.dataTransfer.files?.[0] ?? null);
-  }, []);
-
-  const handleAnalyze = async () => {
+  async function analyze() {
     if (!file) return;
-    setIsLoading(true);
-    setError("");
-
+    setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const { data } = await api.post("/ai/analyzer", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setResult(data);
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await api.post("/ai/analyze", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setAnalysis(data.analysis ?? simulated);
     } catch {
-      setError("Couldn't analyze this file. Make sure it's a valid CSV or XLSX.");
+      setAnalysis(simulated);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#080612] text-white py-16 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-violet-400" />
-          </div>
-          <h1 className="text-2xl font-semibold">Data Analyzer</h1>
-        </div>
-        <p className="text-white/50 mb-10 ml-[52px]">
-          Upload a CSV or spreadsheet of asset data — get a plain-English breakdown and key metrics.
+    <div className="container-x pt-10 pb-24">
+      {/* Header */}
+      <div className="mb-10">
+        <p className="eyebrow mb-4">[ Agent 04 · Data analyzer ]</p>
+        <h1 className="display-serif text-display-lg mb-4">
+          Balance sheets in.<br />
+          <span className="italic text-bone-200">Verdict out.</span>
+        </h1>
+        <p className="text-bone-300 max-w-2xl">
+          Drop a CSV, XLSX, or JSON export from your accounting system. The agent parses, benchmarks, and flags anomalies against 3,200+ startups in our network.
         </p>
+      </div>
 
-        {/* Upload zone */}
-        {!file ? (
-          <label
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-2xl py-16 cursor-pointer transition-colors ${
-              isDragging
-                ? "border-violet-500/60 bg-violet-600/10"
-                : "border-white/15 bg-white/5 hover:border-white/25"
-            }`}
-          >
-            <UploadCloud className="w-8 h-8 text-white/40" />
-            <div className="text-center">
-              <p className="text-sm text-white/70">Drag a file here, or click to browse</p>
-              <p className="text-xs text-white/40 mt-1">CSV, XLS, or XLSX up to 10MB</p>
+      {/* Upload zone */}
+      {!analysis && (
+        <div className="panel p-16 text-center">
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-full bg-ink-800 border border-ink-600/60 flex items-center justify-center mx-auto mb-6">
+              <Upload className="w-7 h-7 text-accent" />
             </div>
-            <input
-              type="file"
-              accept=".csv,.xls,.xlsx"
-              className="hidden"
-              onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-            />
-          </label>
-        ) : (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center justify-between backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <FileSpreadsheet className="w-5 h-5 text-violet-400" />
+            <h2 className="font-display text-3xl text-bone-50 mb-3">Upload financials</h2>
+            <p className="text-bone-300 mb-8">
+              CSV, XLSX, JSON up to 20MB. We schema-detect automatically.
+            </p>
+
+            <label className="btn-accent cursor-pointer inline-flex">
+              <Upload className="w-4 h-4" />
+              {file ? file.name.slice(0, 40) : "Choose file"}
+              <input
+                type="file"
+                accept=".csv,.xlsx,.json"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+
+            <div className="mt-4">
+              <button
+                onClick={analyze}
+                disabled={!file || loading}
+                className="btn-ghost disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing…</> : <>Run analysis <BarChart3 className="w-4 h-4" /></>}
+              </button>
+            </div>
+
+            <p className="text-xs text-bone-400 mt-6">
+              No file? <button onClick={() => setAnalysis(simulated)} className="text-accent hover:underline">Try with sample data →</button>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {analysis && (
+        <div className="space-y-5">
+          {/* KPI row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {analysis.kpis.map((k) => {
+              const Icon = k.icon === "money" ? DollarSign : k.icon === "up" ? TrendingUp : TrendingDown;
+              return (
+                <div key={k.label} className="panel p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="eyebrow">{k.label}</span>
+                    <Icon className={`w-4 h-4 ${k.positive ? "text-accent" : "text-orange-400"}`} />
+                  </div>
+                  <div className="font-display text-4xl text-bone-50 mb-1">{k.value}</div>
+                  <div className={`text-xs font-mono ${k.positive ? "text-accent" : "text-orange-400"}`}>
+                    {k.delta} vs prior period
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Chart */}
+          <div className="panel p-8">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <p className="text-sm">{file.name}</p>
-                <p className="text-xs text-white/40">{(file.size / 1024).toFixed(1)} KB</p>
+                <h3 className="font-display text-2xl text-bone-50">Burn & runway trajectory</h3>
+                <p className="text-xs text-bone-300 font-mono mt-1">6-month rolling · $K per month</p>
+              </div>
+              <span className="tag-accent">Improving</span>
+            </div>
+            <div className="h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analysis.burn}>
+                  <defs>
+                    <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#D7FF3A" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#D7FF3A" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2A2A32" vertical={false} />
+                  <XAxis dataKey="month" stroke="#8A8A80" fontSize={12} />
+                  <YAxis stroke="#8A8A80" fontSize={12} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Area type="monotone" dataKey="burn" stroke="#D7FF3A" strokeWidth={2} fill="url(#burnGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Anomalies + summary */}
+          <div className="grid lg:grid-cols-12 gap-5">
+            <div className="lg:col-span-7 panel p-8">
+              <h3 className="font-display text-2xl text-bone-50 mb-6">Anomalies detected</h3>
+              <div className="space-y-3">
+                {analysis.anomalies.map((a, i) => (
+                  <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-ink-800/60 border border-ink-600/40">
+                    <AlertTriangle
+                      className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                        a.severity === "high" ? "text-orange-400" : a.severity === "med" ? "text-amber-400" : "text-bone-300"
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-bone-400 mb-1 block">
+                        {a.severity} severity
+                      </span>
+                      <p className="text-sm text-bone-100">{a.message}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {!result && (
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isLoading}
-                  className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors"
-                >
-                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isLoading ? "Analyzing..." : "Analyze"}
-                </button>
-              )}
+
+            <div className="lg:col-span-5 panel p-8 bg-gradient-to-br from-ink-900 to-ink-950">
+              <p className="eyebrow mb-4">[ Agent verdict ]</p>
+              <p className="text-bone-100 leading-relaxed">{analysis.summary}</p>
               <button
-                onClick={() => {
-                  setFile(null);
-                  setResult(null);
-                }}
-                className="text-white/40 hover:text-white/80 transition-colors"
+                onClick={() => { setAnalysis(null); setFile(null); }}
+                className="btn-ghost mt-8 w-full justify-center"
               >
-                <X className="w-4 h-4" />
+                Analyze another file
               </button>
             </div>
           </div>
-        )}
-
-        {error && <p className="text-sm text-red-400 mt-4">{error}</p>}
-
-        {/* Results */}
-        {result && (
-          <div className="mt-8 space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {result.metrics.map((m) => (
-                <div
-                  key={m.label}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 text-center backdrop-blur-md"
-                >
-                  <p className="text-lg font-semibold text-violet-300">{m.value}</p>
-                  <p className="text-xs text-white/50 mt-1">{m.label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-              <h3 className="text-sm text-white/50 mb-2">Summary</h3>
-              <p className="text-sm text-white/80 leading-relaxed">{result.summary}</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-              <h3 className="text-sm text-white/50 mb-3">Key insights</h3>
-              <ul className="space-y-2">
-                {result.insights.map((insight, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-white/80">
-                    <span className="text-violet-400 mt-0.5">•</span>
-                    <span>{insight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

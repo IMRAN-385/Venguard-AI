@@ -1,122 +1,204 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Shield, CheckCircle2, Sparkles, Award, ArrowRight } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { Check, ArrowUpRight, Sparkles } from "lucide-react";
+import { CopilotFAB } from "@/components/CopilotFAB";
+
+const tiers = [
+  {
+    name: "Analyst",
+    price: { monthly: 199, yearly: 179 },
+    tagline: "For solo GPs and independent analysts",
+    features: [
+      "500 memos / month",
+      "3 AI providers included",
+      "Explore + Copilot access",
+      "CSV analyzer (10 uploads/mo)",
+      "Email support · 24h SLA",
+    ],
+    cta: "Start Analyst",
+    highlight: false,
+  },
+  {
+    name: "Firm",
+    price: { monthly: 1499, yearly: 1349 },
+    tagline: "For syndicates and small institutional funds",
+    features: [
+      "10 seats · unlimited memos",
+      "All 6 LLM providers",
+      "Full agent mesh access",
+      "Portfolio dashboards + stress tests",
+      "Priority Slack channel",
+      "Custom sector taxonomies",
+      "SOC 2 audit export",
+    ],
+    cta: "Start Firm",
+    highlight: true,
+  },
+  {
+    name: "Institutional",
+    price: { monthly: null, yearly: null },
+    tagline: "For LPs, family offices, and sovereign funds",
+    features: [
+      "Unlimited seats",
+      "Private VPC deployment",
+      "Custom agent orchestration",
+      "SSO · SAML · SCIM",
+      "Dedicated solutions architect",
+      "Bring-your-own LLM keys",
+      "White-glove onboarding",
+    ],
+    cta: "Contact sales",
+    highlight: false,
+  },
+];
+
+const compare = [
+  { row: "Startups in network",     analyst: "3,204",       firm: "3,204 + private",     inst: "Unlimited · custom" },
+  { row: "Agent mesh access",       analyst: "Copilot only", firm: "All 6 agents",        inst: "All 6 + custom agents" },
+  { row: "LLM providers",           analyst: "3",            firm: "6",                    inst: "6 + BYO" },
+  { row: "Data room ingestion",     analyst: "10 files/mo",  firm: "Unlimited",           inst: "Unlimited · private" },
+  { row: "Audit trail retention",   analyst: "30 days",      firm: "1 year",              inst: "7 years" },
+  { row: "SSO",                     analyst: "—",            firm: "Google",              inst: "SAML · SCIM · Okta" },
+  { row: "Support SLA",             analyst: "24h email",    firm: "Priority Slack",      inst: "Dedicated architect" },
+];
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
-
-  const tiers = [
-    {
-      name: 'Solo Analyst Tier',
-      desc: 'Ideal for independent angel investors and technical due diligence consultants.',
-      priceMonthly: 199,
-      priceAnnual: 149,
-      features: [
-        'Up to 50 Autonomous Due Diligence Memos / mo',
-        'Vanguard Copilot with Tool Calling',
-        'CSV & Financial Sheet Analyzer (Up to 10 MB)',
-        'Access to 4,000+ Verified DeepTech Assets',
-        'Standard SOC2 Encryption Boundary'
-      ],
-      cta: 'Start Analyst Trial',
-      highlighted: false
-    },
-    {
-      name: 'Vanguard Pro Syndicate',
-      desc: 'Our flagship tier for lead general partners and institutional seed/Series A funds.',
-      priceMonthly: 499,
-      priceAnnual: 399,
-      features: [
-        'Unlimited Autonomous Due Diligence Memos',
-        'Real-Time Cap-Table & Burn Stress Testing',
-        'AI Smart Matching & Personalized Ranking Engine',
-        'Multi-LLM Live API Key Customization (`/settings`)',
-        'Custom Memo Branding & Word Export (.docx/.pdf)',
-        'Dedicated 24/7 Priority Intelligence Support'
-      ],
-      cta: 'Join Vanguard Pro',
-      highlighted: true
-    },
-    {
-      name: 'Enterprise Fund & Global Family Office',
-      desc: 'Tailored for multi-billion dollar venture funds requiring custom on-premise deployments.',
-      priceMonthly: 1499,
-      priceAnnual: 1199,
-      features: [
-        'Everything in Vanguard Pro Syndicate',
-        'Dedicated Cloud / On-Premise Instance',
-        'Custom Fine-Tuning on Internal Fund Deal-Flow History',
-        'Private API Endpoint & Webhook Integration',
-        'Full HIPAA & Custom Governance Compliance Audit',
-        'Assigned Dedicated Chief AI Investment Architect'
-      ],
-      cta: 'Contact Global Headquarters',
-      highlighted: false
-    }
-  ];
+  const [yearly, setYearly] = useState(true);
 
   return (
-    <div className="w-full min-h-screen bg-navy-950 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-16">
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-secondary/15 border border-secondary/40 text-xs font-semibold text-secondary">
-            <Award className="w-3.5 h-3.5" />
-            <span>Institutional Subscription Tiers</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Transparent Pricing for High-Conviction Venture Funds</h1>
-          <p className="text-sm sm:text-base text-slate-300">Choose the intelligence tier that fits your syndicate check size and deal-flow volume.</p>
+    <div className="container-x pt-10 pb-24">
+      {/* Header */}
+      <div className="text-center max-w-3xl mx-auto mb-14">
+        <p className="eyebrow mb-4">[ Institutional pricing ]</p>
+        <h1 className="display-serif text-display-xl mb-6">
+          Priced for<br />
+          <span className="italic text-bone-200">allocators.</span>
+        </h1>
+        <p className="text-lg text-bone-200 leading-relaxed">
+          No usage traps, no per-agent surcharges. Choose a tier that matches your firm size — upgrade as your book grows.
+        </p>
 
-          <div className="pt-4 flex items-center justify-center gap-3">
-            <span className={`text-xs font-bold ${billingCycle === 'monthly' ? 'text-white' : 'text-slate-400'}`}>Monthly Billing</span>
-            <button onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')} className="w-12 h-6 rounded-full bg-navy-800 border border-navy-700 p-1 flex items-center transition-all cursor-pointer relative">
-              <div className={`w-4 h-4 rounded-full bg-primary shadow-md transition-transform duration-300 ${billingCycle === 'annual' ? 'translate-x-6 bg-secondary' : 'translate-x-0'}`} />
-            </button>
-            <span className={`text-xs font-bold flex items-center gap-1.5 ${billingCycle === 'annual' ? 'text-white' : 'text-slate-400'}`}>
-              <span>Annual Billing</span>
-              <span className="bg-secondary/20 text-secondary text-[10px] px-2 py-0.5 rounded-full uppercase font-extrabold">Save 25%</span>
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          {tiers.map((tier, idx) => {
-            const price = billingCycle === 'annual' ? tier.priceAnnual : tier.priceMonthly;
-            return (
-              <div key={idx} className={`rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between relative shadow-xl ${tier.highlighted ? 'bg-gradient-to-b from-navy-900 via-navy-900/95 to-navy-900 border-primary shadow-[0_0_40px_rgba(59,130,246,0.25)] scale-105 z-10' : 'bg-navy-900/80 border-navy-800 hover:border-navy-700'}`}>
-                {tier.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-extrabold text-[11px] uppercase tracking-wider shadow-md flex items-center gap-1"><Sparkles className="w-3 h-3" /><span>Most Popular Syndicate Tier</span></div>
-                )}
-
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-extrabold text-white">{tier.name}</h3>
-                    <p className="text-xs text-slate-400 mt-2 leading-relaxed">{tier.desc}</p>
-                  </div>
-                  <div className="flex items-baseline gap-1"><span className="text-4xl font-extrabold text-white">${price}</span><span className="text-xs text-slate-400 font-bold">/ partner / month</span></div>
-
-                  <div className="pt-6 border-t border-navy-800 space-y-3">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Included Platform Capabilities:</span>
-                    <ul className="space-y-3 text-xs text-slate-300">
-                      {tier.features.map((feat, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-2.5"><CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${tier.highlighted ? 'text-secondary' : 'text-primary'}`} /><span className="leading-snug">{feat}</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="pt-8">
-                  <Link href={tier.name.includes('Enterprise') ? '/contact' : '/register'} className={`w-full py-3.5 rounded-xl font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-md ${tier.highlighted ? 'bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white shadow-[0_0_20px_rgba(59,130,246,0.35)]' : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-navy-700'}`}>
-                    <span>{tier.cta}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+        {/* Billing toggle */}
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-ink-800 border border-ink-600/40 mt-8">
+          <button
+            onClick={() => setYearly(false)}
+            className={`px-5 py-2 rounded-full text-sm transition ${!yearly ? "bg-accent text-ink-950" : "text-bone-200"}`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setYearly(true)}
+            className={`px-5 py-2 rounded-full text-sm transition flex items-center gap-2 ${yearly ? "bg-accent text-ink-950" : "text-bone-200"}`}
+          >
+            Yearly <span className="text-[10px] font-mono">save 10%</span>
+          </button>
         </div>
       </div>
+
+      {/* Tiers */}
+      <div className="grid lg:grid-cols-3 gap-5 mb-20">
+        {tiers.map((t) => (
+          <div
+            key={t.name}
+            className={`panel p-8 flex flex-col ${
+              t.highlight ? "ring-2 ring-accent/60 relative" : ""
+            }`}
+          >
+            {t.highlight && (
+              <span className="absolute -top-3 left-8 tag-accent flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Most popular
+              </span>
+            )}
+
+            <h3 className="font-display text-2xl text-bone-50 mb-1">{t.name}</h3>
+            <p className="text-sm text-bone-300 mb-6">{t.tagline}</p>
+
+            <div className="mb-6">
+              {t.price.monthly !== null ? (
+                <>
+                  <span className="font-display text-6xl text-bone-50">
+                    ${yearly ? t.price.yearly : t.price.monthly}
+                  </span>
+                  <span className="text-sm text-bone-300 ml-2">/mo</span>
+                  {yearly && (
+                    <p className="text-xs font-mono text-accent mt-1">billed annually</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="font-display text-4xl text-bone-50">Custom</span>
+                  <p className="text-xs font-mono text-bone-300 mt-1">contact for quote</p>
+                </>
+              )}
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-1">
+              {t.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-bone-200">
+                  <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href={t.price.monthly ? "/register" : "/contact"}
+              className={t.highlight ? "btn-accent w-full justify-center" : "btn-ghost w-full justify-center"}
+            >
+              {t.cta} <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* Compare table */}
+      <div className="mb-16">
+        <div className="text-center mb-10">
+          <p className="eyebrow mb-3">[ Feature comparison ]</p>
+          <h2 className="display-serif text-display-md">Everything, side by side.</h2>
+        </div>
+
+        <div className="panel overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-ink-600/40 bg-ink-950/40">
+                  <th className="text-left px-6 py-5 eyebrow">Feature</th>
+                  <th className="text-left px-6 py-5 eyebrow">Analyst</th>
+                  <th className="text-left px-6 py-5 eyebrow text-accent">Firm</th>
+                  <th className="text-left px-6 py-5 eyebrow">Institutional</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compare.map((c, i) => (
+                  <tr key={i} className="border-b border-ink-600/20 last:border-0">
+                    <td className="px-6 py-4 text-bone-200">{c.row}</td>
+                    <td className="px-6 py-4 text-bone-300">{c.analyst}</td>
+                    <td className="px-6 py-4 text-bone-50 font-medium">{c.firm}</td>
+                    <td className="px-6 py-4 text-bone-100">{c.inst}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ mini */}
+      <div className="panel p-12 text-center">
+        <p className="eyebrow mb-3">[ Still deciding ]</p>
+        <h2 className="display-serif text-display-md mb-4">Talk to our team.</h2>
+        <p className="text-bone-300 max-w-lg mx-auto mb-8">
+          15-minute call. We'll help you size the right tier and walk you through a live agent workflow with your own thesis.
+        </p>
+        <Link href="/contact" className="btn-accent">
+          Book a walkthrough <ArrowUpRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      <CopilotFAB />
     </div>
   );
 }

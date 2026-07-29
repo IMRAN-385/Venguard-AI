@@ -1,156 +1,126 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
-export const SectorChartSection: React.FC = () => {
-  const [metricView, setMetricView] = useState<'valuation' | 'score'>('valuation');
+const sectorData = [
+  { sector: "Quantum",   deals: 42, fill: "#D7FF3A" },
+  { sector: "BioTech",   deals: 38, fill: "#EDEDE6" },
+  { sector: "Fusion",    deals: 29, fill: "#C8C8BF" },
+  { sector: "Robotics",  deals: 24, fill: "#8A8A80" },
+  { sector: "SpaceTech", deals: 18, fill: "#5A5A54" },
+  { sector: "Neural",    deals: 15, fill: "#3A3A44" },
+];
 
-  const chartData = [
-    { sector: 'Generative AI', avgValuationM: 45.0, avgAiScore: 94, dealCount: 18, benchmarkMultiple: '14.2x ARR' },
-    { sector: 'Quantum Computing', avgValuationM: 36.5, avgAiScore: 93, dealCount: 12, benchmarkMultiple: '12.8x ARR' },
-    { sector: 'Biotech & Genomics', avgValuationM: 48.0, avgAiScore: 90, dealCount: 15, benchmarkMultiple: '9.4x ARR' },
-    { sector: 'CleanTech & Fusion', avgValuationM: 96.0, avgAiScore: 92, dealCount: 9, benchmarkMultiple: '11.0x ARR' },
-    { sector: 'Robotics & Automation', avgValuationM: 25.0, avgAiScore: 89, dealCount: 14, benchmarkMultiple: '8.5x ARR' },
-  ];
+const radialData = [
+  { name: "Verified", value: 82, fill: "#D7FF3A" },
+];
 
+const tooltipStyle = {
+  background: "#17171C",
+  border: "1px solid #2A2A32",
+  borderRadius: "12px",
+  padding: "8px 12px",
+  color: "#FAFAF7",
+  fontSize: "12px",
+  fontFamily: "JetBrains Mono, monospace",
+};
+
+export function SectorChartSection() {
   return (
-    <section className="w-full bg-navy-950 border-b border-navy-800 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-10">
+    <section className="section">
+      <div className="container-x">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-xs font-semibold text-primary-light mb-3">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>Sector Intelligence & Valuations</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              DeepTech Valuation Multiples & AI Health Distribution
+            <p className="eyebrow mb-4">[ Sector intelligence ]</p>
+            <h2 className="display-serif text-display-lg max-w-2xl">
+              Where capital<br />
+              <span className="italic text-bone-200">meets frontier tech.</span>
             </h2>
-            <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-              Compare average Series A/B valuations against institutional revenue multiples across verified autonomous asset categories.
-            </p>
           </div>
-
-          {/* Toggle controls */}
-          <div className="flex items-center gap-2 bg-navy-900 p-1.5 rounded-xl border border-navy-800 shrink-0">
-            <button
-              onClick={() => setMetricView('valuation')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                metricView === 'valuation'
-                  ? 'bg-primary text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Average Valuation ($M)
-            </button>
-            <button
-              onClick={() => setMetricView('score')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                metricView === 'score'
-                  ? 'bg-secondary text-navy-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Average AI Score (1-100)
-            </button>
-          </div>
+          <p className="text-bone-300 text-sm max-w-sm">
+            Live sector breakdown from the last 90 days of verified deal-flow across the Vanguard mesh.
+          </p>
         </div>
 
-        {/* Chart Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          <div className="lg:col-span-8 bg-navy-900/80 rounded-2xl p-6 border border-navy-800 shadow-xl">
-            <div className="h-80 w-full">
+        <div className="grid lg:grid-cols-12 gap-5">
+          {/* Left: Bar chart */}
+          <div className="lg:col-span-8 panel p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="font-display text-2xl text-bone-50">Deal flow by sector</h3>
+                <p className="text-xs text-bone-300 mt-1 font-mono">last 90 days · n = 166</p>
+              </div>
+              <span className="tag-accent">Live</span>
+            </div>
+
+            <div className="h-[340px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                <BarChart data={sectorData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2A2A32" vertical={false} />
                   <XAxis
                     dataKey="sector"
-                    stroke="#64748B"
-                    tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 600 }}
+                    tick={{ fill: "#8A8A80", fontSize: 12, fontFamily: "Inter" }}
+                    axisLine={{ stroke: "#2A2A32" }}
+                    tickLine={false}
                   />
                   <YAxis
-                    stroke="#64748B"
-                    tick={{ fill: '#94A3B8', fontSize: 11 }}
-                    domain={metricView === 'valuation' ? [0, 110] : [70, 100]}
+                    tick={{ fill: "#8A8A80", fontSize: 12, fontFamily: "Inter" }}
+                    axisLine={false}
+                    tickLine={false}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0F172A',
-                      borderColor: '#334155',
-                      borderRadius: '12px',
-                      color: '#F8FAFC',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
-                    }}
-                    formatter={(value: any) => [
-                      metricView === 'valuation' ? `$${value}M USD` : `${value} / 100 Score`,
-                      metricView === 'valuation' ? 'Avg Valuation' : 'Avg AI Health Score'
-                    ]}
-                  />
-                  <Bar
-                    dataKey={metricView === 'valuation' ? 'avgValuationM' : 'avgAiScore'}
-                    radius={[8, 8, 0, 0]}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={metricView === 'valuation' ? (index % 2 === 0 ? '#3B82F6' : '#60A5FA') : '#10B981'}
-                      />
-                    ))}
-                  </Bar>
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#1F1F26" }} />
+                  <Bar dataKey="deals" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-400 pt-4 border-t border-navy-800 mt-2">
-              <span>Data source: Vanguard AI Autonomous Real-Time Valuation Database</span>
-              <span className="text-secondary font-bold">Updated Live</span>
-            </div>
           </div>
 
-          {/* Right side metric summary cards */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="bg-navy-900/90 rounded-2xl p-5 border border-navy-800 space-y-3 shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-slate-400">Top Growth Multiple</span>
-                <span className="px-2 py-0.5 rounded bg-primary/20 text-primary-light font-bold text-[11px]">Generative AI</span>
-              </div>
-              <div className="text-2xl font-extrabold text-white">14.2x Projected ARR</div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Generative AI and hybrid quantum compilation models continue to trade at premium multiples due to 40%+ quarterly top-line expansion.
-              </p>
+          {/* Right: Radial verification rate */}
+          <div className="lg:col-span-4 panel p-8 flex flex-col">
+            <div className="mb-4">
+              <h3 className="font-display text-2xl text-bone-50">Verification rate</h3>
+              <p className="text-xs text-bone-300 mt-1 font-mono">agent-cross-checked</p>
             </div>
 
-            <div className="bg-navy-900/90 rounded-2xl p-5 border border-navy-800 space-y-3 shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-slate-400">Highest Safety Hurdle</span>
-                <span className="px-2 py-0.5 rounded bg-secondary/20 text-secondary font-bold text-[11px]">94 / 100 Score</span>
+            <div className="flex-1 flex items-center justify-center relative">
+              <div className="w-full h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart
+                    innerRadius="70%"
+                    outerRadius="100%"
+                    data={radialData}
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                    <RadialBar background={{ fill: "#1F1F26" }} dataKey="value" cornerRadius={20} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
               </div>
-              <div className="text-xl font-extrabold text-white">QuantumScale & Aetheria</div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Our autonomous audit engine verified zero high-severity IP conflicts or cap-table overhangs across the top quartile of Series A allocations.
-              </p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="font-display text-6xl text-bone-50">82<span className="text-accent">%</span></span>
+                <span className="text-xs text-bone-300 uppercase tracking-widest mt-1">Verified</span>
+              </div>
             </div>
 
-            <div className="bg-gradient-to-r from-primary/15 to-secondary/15 border border-primary/30 rounded-2xl p-4 text-xs text-slate-200 flex items-center justify-between gap-3">
-              <div className="space-y-1">
-                <span className="font-bold text-white block">Need Custom Sector Analysis?</span>
-                <span className="text-slate-400">Upload CSV financials to our Data Analyzer for instant benchmarking.</span>
-              </div>
-              <Link
-                href="/ai/analyzer"
-                className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold shrink-0 transition-all shadow-sm"
-              >
-                Analyze CSV
-              </Link>
+            <div className="pt-6 border-t border-ink-600/40 flex items-center justify-between text-xs text-bone-300">
+              <span>3,204 startups</span>
+              <span className="font-mono">+12% MoM</span>
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
   );
-};
+}

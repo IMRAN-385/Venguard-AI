@@ -1,31 +1,29 @@
-"use client";
-
-import React, { useState } from "react";
-import "./globals.css"; 
+import type { Metadata } from "next";
+import "./globals.css";
 import { Providers } from "./providers";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
-import { VanguardCopilotDrawer } from "../components/VanguardCopilotDrawer";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [copilotOpen, setCopilotOpen] = useState(false);
+export const metadata: Metadata = {
+  title: "Vanguard AI — Autonomous DeepTech Due Diligence",
+  description:
+    "Vanguard AI programmatically ingests startup cap-tables, GitHub repositories, and USPTO patent filings to draft institutional investment memorandums in seconds.",
+};
 
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <title>Vanguard AI — Autonomous DeepTech Due Diligence & Investment Intelligence Platform</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-      </head>
-            <body className="bg-navy-950 text-slate-100 font-sans antialiased selection:bg-primary/30 selection:text-white min-h-screen flex flex-col">
-
+      <body className="bg-ink-950 text-bone-50 antialiased grain">
         <Providers>
-          <Navbar onOpenCopilot={() => setCopilotOpen(true)} />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <VanguardCopilotDrawer isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />
+          <div className="relative z-10 min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

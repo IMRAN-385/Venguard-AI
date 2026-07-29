@@ -1,55 +1,102 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #0B1120;
-  --foreground: #F8FAFC;
-
-  --primary: #3B82F6;
-  --secondary: #10B981;
+  color-scheme: dark;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
+html, body {
+  background-color: #0A0A0B;
+  color: #FAFAF7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv11';
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  overflow-x: hidden;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.glass-panel {
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 16px;
+::selection {
+  background: #D7FF3A;
+  color: #0A0A0B;
 }
 
-.border-glow {
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
-}
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0A0A0B; }
+::-webkit-scrollbar-thumb { background: #2A2A32; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #3A3A44; }
 
-::-webkit-scrollbar {
-  width: 8px;
-}
+@layer components {
+  /* Panels & cards */
+  .panel {
+    @apply bg-ink-900 border border-ink-600/50 rounded-3xl;
+    box-shadow: 0 1px 0 0 rgba(255,255,255,0.04) inset,
+                0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+  .card-item {
+    @apply bg-ink-800 border border-ink-600/40 rounded-2xl transition-all duration-300 hover:bg-ink-700 hover:border-ink-500;
+  }
 
-::-webkit-scrollbar-track {
-  background: #0B1120;
-}
+  /* Typography */
+  .eyebrow {
+    @apply text-[11px] uppercase tracking-[0.18em] text-bone-300 font-medium;
+  }
+  .display-serif {
+    @apply font-display font-normal text-bone-50;
+    letter-spacing: -0.02em;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 999px;
-}
+  /* Buttons — pill style like reference */
+  .btn-pill {
+    @apply inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition-all duration-200;
+  }
+  .btn-primary {
+    @apply btn-pill bg-bone-50 text-ink-950 hover:bg-bone-100 hover:scale-[1.02];
+  }
+  .btn-accent {
+    @apply btn-pill bg-accent text-ink-950 hover:bg-accent-hover hover:scale-[1.02];
+  }
+  .btn-ghost {
+    @apply btn-pill text-bone-100 hover:bg-ink-800 border border-ink-600/60;
+  }
+  .btn-link {
+    @apply inline-flex items-center gap-2 text-sm text-bone-100 hover:text-accent transition-colors;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  /* Inputs */
+  .field {
+    @apply w-full rounded-2xl bg-ink-800 border border-ink-600/50 px-4 py-3 text-bone-50 placeholder-bone-400 focus:outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/20 transition;
+  }
+
+  /* Badges */
+  .tag {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-ink-800 border border-ink-600/50 px-3 py-1 text-[11px] uppercase tracking-wider text-bone-200 font-medium;
+  }
+  .tag-accent {
+    @apply tag bg-accent/10 border-accent/30 text-accent;
+  }
+
+  /* Section wrapper */
+  .section {
+    @apply py-24 md:py-32;
+  }
+  .container-x {
+    @apply mx-auto max-w-[1400px] px-6 md:px-10;
+  }
+
+  /* Grain overlay for premium feel */
+  .grain::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3' seed='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/></svg>");
+  }
 }

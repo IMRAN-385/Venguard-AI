@@ -1,97 +1,124 @@
 "use client";
 
-import React from 'react';
-import { ShieldCheck, Cpu, RefreshCw, Sparkles } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Activity, CheckCircle2, Loader2 } from "lucide-react";
 
-export const LiveAgentFeed: React.FC = () => {
-  const feedItems = [
-    {
-      id: 'feed_1',
-      agent: 'Vanguard-IP-Audit-Agent v4.2',
-      action: 'Verified 3 new hybrid tensor compilation patents for',
-      target: 'QuantumScale Neural Labs',
-      status: 'Verified',
-      time: '2 mins ago',
-      icon: ShieldCheck,
-      color: 'text-secondary'
-    },
-    {
-      id: 'feed_2',
-      agent: 'Vanguard-CapTable-Auditor v3.9',
-      action: 'Recalculated 24-month operating runway reserve for',
-      target: 'CogniMesh Autonomous Robotics',
-      status: 'Pass',
-      time: '7 mins ago',
-      icon: Cpu,
-      color: 'text-primary-light'
-    },
-    {
-      id: 'feed_3',
-      agent: 'Vanguard-Bio-Regulatory-Agent v3.8',
-      action: 'Confirmed Phase 1 EMA safety dossier verification for',
-      target: 'Aetheria Synthetic Biology',
-      status: 'Verified',
-      time: '14 mins ago',
-      icon: ShieldCheck,
-      color: 'text-secondary'
-    },
-    {
-      id: 'feed_4',
-      agent: 'Vanguard-Financial-Anomaly-Detector',
-      action: 'Simulated +25% cloud infrastructure cost inflation for',
-      target: 'Helios Plasma Fusion Power',
-      status: 'Pass',
-      time: '22 mins ago',
-      icon: RefreshCw,
-      color: 'text-primary'
-    }
-  ];
+interface AgentEvent {
+  id: number;
+  agent: string;
+  action: string;
+  target: string;
+  status: "running" | "done";
+  time: string;
+}
+
+const seedEvents: AgentEvent[] = [
+  { id: 1, agent: "Agent 01", action: "Generating memo for", target: "Neuralink Cortex Labs", status: "running", time: "just now" },
+  { id: 2, agent: "Agent 04", action: "Analyzing burn rate for", target: "Quantum Bio Systems", status: "done", time: "12s ago" },
+  { id: 3, agent: "Agent 02", action: "Matched investor thesis to", target: "AtomFusion Reactors", status: "done", time: "34s ago" },
+  { id: 4, agent: "Agent 05", action: "Tagged 47 patents from", target: "USPTO batch #A-2210", status: "done", time: "1m ago" },
+  { id: 5, agent: "Agent 03", action: "Answered Copilot query about", target: "SaaS ARR benchmarks", status: "done", time: "2m ago" },
+  { id: 6, agent: "Agent 06", action: "Rotated LLM provider to", target: "Groq (Llama 3.3 70B)", status: "done", time: "3m ago" },
+];
+
+export function LiveAgentFeed() {
+  const [events, setEvents] = useState(seedEvents);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const agents = ["Agent 01", "Agent 02", "Agent 03", "Agent 04", "Agent 05", "Agent 06"];
+      const actions = [
+        { a: "Verified cap-table for", t: "Helion Fusion Corp" },
+        { a: "Ingested GitHub commits from", t: "openfold/protein-pred" },
+        { a: "Stress-tested portfolio against", t: "2030 climate scenario" },
+        { a: "Classified pitch deck of", t: "Boreal Robotics Inc" },
+      ];
+      const pick = actions[Math.floor(Math.random() * actions.length)];
+      const agent = agents[Math.floor(Math.random() * agents.length)];
+      const newEvent: AgentEvent = {
+        id: Date.now(),
+        agent,
+        action: pick.a,
+        target: pick.t,
+        status: "running",
+        time: "just now",
+      };
+      setEvents((prev) => [newEvent, ...prev.slice(0, 5)]);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <section className="w-full bg-navy-950 border-b border-navy-800 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        {/* Left Label */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-secondary/20 border border-secondary/40 flex items-center justify-center text-secondary">
-            <Sparkles className="w-4 h-4 animate-spin-slow" />
-          </div>
-          <div>
-            <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              Live Autonomous Agent Feed
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-            </span>
-            <span className="text-[11px] text-slate-400">Continuous 24/7 DeepTech Due Diligence Execution</span>
-          </div>
-        </div>
+    <section className="section">
+      <div className="container-x">
+        <div className="grid lg:grid-cols-12 gap-10 items-start">
+          {/* Left column: heading */}
+          <div className="lg:col-span-5 lg:sticky lg:top-28">
+            <p className="eyebrow mb-4">[ Live telemetry ]</p>
+            <h2 className="display-serif text-display-lg mb-6">
+              Agents at work,<br />
+              <span className="italic text-bone-200">right now.</span>
+            </h2>
+            <p className="text-bone-300 leading-relaxed max-w-md">
+              Every deal-flow event is streamed from the Vanguard agent mesh — no polling, no batch jobs. This is a live window into what the platform is verifying globally.
+            </p>
 
-        {/* Ticker / Feed Cards */}
-        <div className="flex-1 w-full md:w-auto overflow-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {feedItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.id}
-                  className="bg-navy-900/90 border border-navy-800 rounded-xl p-3 hover:border-primary/40 transition-all shadow-sm flex items-start gap-2.5"
-                >
-                  <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${item.color}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 mb-0.5">
-                      <span className="font-semibold text-slate-300 truncate">{item.agent}</span>
-                      <span>{item.time}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 leading-snug line-clamp-2">
-                      {item.action} <span className="font-bold text-white">{item.target}</span>
-                    </p>
-                  </div>
+            <div className="mt-8 flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+              </span>
+              <span className="text-xs font-mono uppercase tracking-widest text-bone-200">
+                6 agents · streaming
+              </span>
+            </div>
+          </div>
+
+          {/* Right column: terminal */}
+          <div className="lg:col-span-7">
+            <div className="panel overflow-hidden">
+              {/* Terminal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-ink-600/40 bg-ink-950/40">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-ink-600" />
+                  <div className="w-3 h-3 rounded-full bg-ink-600" />
+                  <div className="w-3 h-3 rounded-full bg-accent" />
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2 text-xs font-mono text-bone-300">
+                  <Activity className="w-3.5 h-3.5" />
+                  vanguard://agents/stream
+                </div>
+                <span className="text-[10px] font-mono text-bone-400">v4.2</span>
+              </div>
+
+              {/* Feed */}
+              <div className="p-6 space-y-3 font-mono text-sm min-h-[400px]">
+                {events.map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex items-start gap-3 py-2 border-b border-ink-600/20 last:border-0 animate-in fade-in slide-in-from-top-2 duration-500"
+                  >
+                    <span className="text-bone-400 text-xs mt-1 w-20 flex-shrink-0">
+                      {e.time}
+                    </span>
+                    <span className="tag text-[10px] px-2 py-0.5 flex-shrink-0">
+                      {e.agent}
+                    </span>
+                    <span className="text-bone-200 flex-1">
+                      {e.action} <span className="text-accent">{e.target}</span>
+                    </span>
+                    {e.status === "running" ? (
+                      <Loader2 className="w-3.5 h-3.5 text-accent animate-spin flex-shrink-0" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-bone-300 flex-shrink-0" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
     </section>
   );
-};
+}

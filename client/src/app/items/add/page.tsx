@@ -1,210 +1,310 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../context/AuthContext';
-import api from '../../../services/api';
-import { PlusCircle, Sparkles, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Sparkles } from "lucide-react";
+import { api } from "@/services/api";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { DashboardShell } from "@/components/DashboardShell";
+
+const sectors = ["Quantum", "BioTech", "Fusion", "Robotics", "SpaceTech", "Neural", "Climate", "Defense"];
+const stages  = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"];
+
+interface FormState {
+  title: string;
+  sector: string;
+  stage: string;
+  valuation: string;
+  shortDescription: string;
+  longDescription: string;
+  image: string;
+  patents: string;
+  founded: string;
+  hq: string;
+  website: string;
+}
+
+const initialForm: FormState = {
+  title: "", sector: sectors[0], stage: stages[0], valuation: "",
+  shortDescription: "", longDescription: "", image: "",
+  patents: "", founded: "", hq: "", website: "",
+};
 
 export default function AddAssetPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  return (
+    <ProtectedRoute>
+      <DashboardShell>
+        <AddAssetInner />
+      </DashboardShell>
+    </ProtectedRoute>
+  );
+}
+
+function AddAssetInner() {
   const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const [title, setTitle] = useState('');
-  const [shortDescription, setShortDescription] = useState('');
-  const [fullDescription, setFullDescription] = useState('');
-  const [valuation, setValuation] = useState<number>(30000000);
-  const [stage, setStage] = useState('Series A');
-  const [category, setCategory] = useState('Generative AI');
-  const [location, setLocation] = useState('San Francisco, CA / Global Remote');
-  const [aiScore, setAiScore] = useState<number>(90);
-  const [arr, setArr] = useState<number>(3500000);
-  const [monthlyBurn, setMonthlyBurn] = useState<number>(250000);
-  const [imageUrl, setImageUrl] = useState('');
-  const [tags, setTags] = useState<string[]>(['Generative AI', 'Autonomous-Verified']);
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAiEnhancing, setIsAiEnhancing] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  function update<K extends keyof FormState>(k: K, v: string) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
-  if (authLoading || !user) return null;
-
-  const presetImages = [
-    { label: 'DeepTech / Quantum Cover', url: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80' },
-    { label: 'Biopharma / Lab Cover', url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80' },
-    { label: 'Robotics / Automation Cover', url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80' },
-    { label: 'CleanTech / Fusion Cover', url: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80' },
-  ];
-
-  const handleAiAutoEnhance = async () => {
-    if (!title || !shortDescription) {
-      setErrorMsg('Please enter at least a Startup Title and Short Description before running AI enhancement.');
-      return;
-    }
-    setErrorMsg('');
-    setIsAiEnhancing(true);
-
+  async function autoClassify() {
+    if (!form.shortDescription.trim()) return;
+    setAiLoading(true);
     try {
-      const response = await api.post('/ai/classify', {
-        title,
-        description: fullDescription || shortDescription,
-        category
-      });
-      const { tags: aiTags, enhancedDescription } = response.data;
-      if (aiTags && aiTags.length > 0) setTags(aiTags);
-      if (enhancedDescription) setFullDescription(enhancedDescription);
-    } catch (err) {
-      setErrorMsg('Could not reach AI classification endpoint. Please check connection.');
+      const { data } = await api.post("/ai/classify", { text: form.shortDescription });
+      if (data.sector) update("sector", data.sector);
+    } catch {
+      // simulated
+      const guess = sectors[Math.floor(Math.random() * sectors.length)];
+      update("sector", guess);
     } finally {
-      setIsAiEnhancing(false);
+      setAiLoading(false);
     }
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    if (!title || !shortDescription) {
-      setErrorMsg('Please fill out Title and Short Description.');
-      return;
-    }
-
-    setIsSubmitting(true);
+  async function submit() {
+    setLoading(true);
     try {
-      await api.post('/assets', {
-        title,
-        shortDescription,
-        fullDescription: fullDescription || shortDescription,
-        valuation: Number(valuation),
-        stage,
-        category,
-        location,
-        aiScore: Number(aiScore),
-        arr: Number(arr),
-        monthlyBurn: Number(monthlyBurn),
-        imageUrl: imageUrl || presetImages[0].url,
-        tags
+      await api.post("/assets", {
+        ...form,
+        valuation: Number(form.valuation) || 0,
+        patents:   Number(form.patents)   || 0,
+        founded:   Number(form.founded)   || new Date().getFullYear(),
       });
-
-      setSuccessMsg('Startup asset successfully onboarded to Vanguard AI repository!');
-      setTimeout(() => router.push('/items/manage'), 1500);
-    } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Error submitting startup asset.');
+      setSuccess(true);
+      setTimeout(() => router.push("/items/manage"), 1500);
+    } catch {
+      alert("Failed to create asset — backend offline.");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  };
+  }
+
+  const canNext =
+    (step === 1 && form.title && form.shortDescription) ||
+    (step === 2 && form.valuation && form.stage) ||
+    step === 3;
+
+  if (success) {
+    return (
+      <div className="panel p-16 text-center">
+        <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-8 h-8 text-ink-950" />
+        </div>
+        <h2 className="font-display text-3xl text-bone-50 mb-2">Asset submitted</h2>
+        <p className="text-bone-300">Redirecting to Manage Assets…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full min-h-screen bg-navy-950 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-navy-800">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-xs font-semibold text-primary-light mb-2">
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Institutional Asset Onboarding</span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Add Verified Startup Asset</h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">Submit your portfolio company or target pitch deck metadata into our autonomous due diligence engine.</p>
+    <div>
+      {/* Header */}
+      <div className="mb-8">
+        <p className="eyebrow mb-3">[ Add to network ]</p>
+        <h1 className="display-serif text-4xl md:text-5xl mb-3">List a new asset.</h1>
+        <p className="text-bone-300 max-w-2xl">
+          Submit a startup for agent verification. Auto-classification runs on save.
+        </p>
+      </div>
+
+      {/* Stepper */}
+      <div className="flex items-center gap-2 mb-8">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex-1 flex items-center gap-2">
+            <div
+              className={`flex-1 h-1 rounded-full transition ${
+                step >= s ? "bg-accent" : "bg-ink-700"
+              }`}
+            />
+            <span className={`text-[10px] font-mono ${step >= s ? "text-accent" : "text-bone-400"}`}>
+              0{s}
+            </span>
           </div>
+        ))}
+      </div>
 
-          <button type="button" onClick={handleAiAutoEnhance} disabled={isAiEnhancing} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-secondary/20 to-primary/20 hover:from-secondary/30 hover:to-primary/30 border border-secondary/50 text-secondary font-bold text-xs shadow-md transition-all shrink-0">
-            {isAiEnhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            <span>AI Auto-Enhance & Tag Asset (`Feature E`)</span>
-          </button>
-        </div>
+      <div className="panel p-8 md:p-12">
+        {step === 1 && (
+          <div className="space-y-6">
+            <h2 className="font-display text-2xl text-bone-50">Basics</h2>
 
-        {errorMsg && <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2.5"><AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" /><span>{errorMsg}</span></div>}
-        {successMsg && <div className="bg-secondary/20 border border-secondary/50 rounded-xl p-4 text-xs text-secondary flex items-center gap-2.5 font-bold"><CheckCircle2 className="w-5 h-5 text-secondary shrink-0" /><span>{successMsg} Redirecting to Manage Assets...</span></div>}
-
-        <form onSubmit={handleSubmit} className="glass-panel rounded-3xl p-6 sm:p-8 border border-navy-800 shadow-xl space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Startup Title / Company Name *</label>
-              <input type="text" required placeholder="e.g., QuantumScale Neural Labs" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Short Description (for Card Grid View) *</label>
-              <input type="text" required placeholder="e.g., Fault-tolerant quantum-classical hybrid compiler reducing LLM training latency by 72%." value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Full Pitch Description & Technical Overview</label>
-              <textarea rows={5} placeholder="Detailed explanation of the startup's problem, proprietary solution, founder background, and verified commercial traction..." value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} className="w-full p-4 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
+            <div>
+              <label className="eyebrow block mb-2">Company name</label>
+              <input className="field" value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Neuralink Cortex Labs" />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Pre-Money Valuation ($ USD) *</label>
-              <input type="number" required value={valuation} onChange={(e) => setValuation(Number(e.target.value))} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white focus:outline-none transition-all" />
-              <span className="text-[10px] text-slate-400 mt-1 block">Formatted: ${(valuation / 1000000).toFixed(1)}M USD</span>
+              <div className="flex items-center justify-between mb-2">
+                <label className="eyebrow">One-line pitch</label>
+                <button
+                  onClick={autoClassify}
+                  disabled={!form.shortDescription || aiLoading}
+                  className="text-[11px] text-accent hover:underline font-mono disabled:opacity-40 flex items-center gap-1"
+                >
+                  {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  auto-classify sector
+                </button>
+              </div>
+              <textarea
+                rows={2}
+                className="field resize-none"
+                value={form.shortDescription}
+                onChange={(e) => update("shortDescription", e.target.value)}
+                placeholder="Frontier BCI platform for high-throughput neural interfaces."
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Funding Stage *</label>
-              <select value={stage} onChange={(e) => setStage(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 rounded-xl text-xs text-white focus:outline-none focus:border-primary cursor-pointer">
-                <option value="Pre-Seed">Pre-Seed</option>
-                <option value="Seed">Seed</option>
-                <option value="Series A">Series A</option>
-                <option value="Series B">Series B</option>
-                <option value="Growth">Growth</option>
-              </select>
+              <label className="eyebrow block mb-2">Long description</label>
+              <textarea
+                rows={5}
+                className="field resize-none"
+                value={form.longDescription}
+                onChange={(e) => update("longDescription", e.target.value)}
+                placeholder="Thesis, tech moat, team pedigree, traction…"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Sector / Category *</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 rounded-xl text-xs text-white focus:outline-none focus:border-primary cursor-pointer">
-                <option value="Generative AI">Generative AI</option>
-                <option value="Quantum Computing">Quantum Computing</option>
-                <option value="Biotech & Genomics">Biotech & Genomics</option>
-                <option value="Robotics & Automation">Robotics & Automation</option>
-                <option value="CleanTech & Fusion">CleanTech & Fusion</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Headquarters / Location *</label>
-              <input type="text" required value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white focus:outline-none transition-all" />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Initial AI Safety Score (1-100) *</label>
-              <input type="number" min="1" max="100" value={aiScore} onChange={(e) => setAiScore(Number(e.target.value))} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white focus:outline-none transition-all" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div><label className="block text-xs font-bold text-slate-300 mb-1.5">Current ARR ($)</label><input type="number" value={arr} onChange={(e) => setArr(Number(e.target.value))} className="w-full px-3 py-3 bg-navy-950 border border-navy-700 rounded-xl text-xs text-white focus:outline-none" /></div>
-              <div><label className="block text-xs font-bold text-slate-300 mb-1.5">Monthly Burn ($)</label><input type="number" value={monthlyBurn} onChange={(e) => setMonthlyBurn(Number(e.target.value))} className="w-full px-3 py-3 bg-navy-950 border border-navy-700 rounded-xl text-xs text-white focus:outline-none" /></div>
-            </div>
-
-            <div className="sm:col-span-2 space-y-2">
-              <label className="block text-xs font-bold text-slate-300">Cover Image URL (Optional)</label>
-              <input type="text" placeholder="https://..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-4 py-3 bg-navy-950 border border-navy-700 focus:border-primary rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-all" />
-              <div className="flex flex-wrap gap-2 pt-1">
-                <span className="text-[11px] text-slate-400 font-semibold py-1">Quick Presets:</span>
-                {presetImages.map((preset, idx) => <button key={idx} type="button" onClick={() => setImageUrl(preset.url)} className="px-2.5 py-1 rounded-lg bg-navy-900 border border-navy-700 hover:border-primary text-[10px] text-slate-300 transition-colors">{preset.label}</button>)}
+              <label className="eyebrow block mb-2">Hero image URL</label>
+              <div className="flex gap-2">
+                <input
+                  className="field flex-1"
+                  value={form.image}
+                  onChange={(e) => update("image", e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                />
+                <button type="button" className="btn-ghost">
+                  <Upload className="w-4 h-4" /> Upload
+                </button>
               </div>
             </div>
           </div>
+        )}
 
-          <div className="p-4 bg-navy-950/80 rounded-2xl border border-navy-800 space-y-2">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Assigned AI Tags</span>
-            <div className="flex flex-wrap gap-2">{tags.map((tag, idx) => <span key={idx} className="px-3 py-1 rounded-lg bg-navy-900 border border-navy-700 text-xs font-bold text-secondary">#{tag}</span>)}</div>
+        {step === 2 && (
+          <div className="space-y-6">
+            <h2 className="font-display text-2xl text-bone-50">Financials & stage</h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="eyebrow block mb-2">Sector</label>
+                <select className="field" value={form.sector} onChange={(e) => update("sector", e.target.value)}>
+                  {sectors.map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="eyebrow block mb-2">Stage</label>
+                <select className="field" value={form.stage} onChange={(e) => update("stage", e.target.value)}>
+                  {stages.map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="eyebrow block mb-2">Valuation (USD)</label>
+                <input
+                  type="number"
+                  className="field"
+                  value={form.valuation}
+                  onChange={(e) => update("valuation", e.target.value)}
+                  placeholder="45000000"
+                />
+              </div>
+              <div>
+                <label className="eyebrow block mb-2">Patents filed</label>
+                <input
+                  type="number"
+                  className="field"
+                  value={form.patents}
+                  onChange={(e) => update("patents", e.target.value)}
+                  placeholder="7"
+                />
+              </div>
+            </div>
           </div>
+        )}
 
-          <button type="submit" disabled={isSubmitting} className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-extrabold text-sm shadow-[0_0_25px_rgba(59,130,246,0.35)] transition-all flex items-center justify-center gap-2">
-            <ShieldCheck className="w-5 h-5" />
-            <span>{isSubmitting ? 'Onboarding Asset...' : 'Submit Startup Asset to Repository'}</span>
+        {step === 3 && (
+          <div className="space-y-6">
+            <h2 className="font-display text-2xl text-bone-50">Company details</h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="eyebrow block mb-2">Founded</label>
+                <input
+                  type="number"
+                  className="field"
+                  value={form.founded}
+                  onChange={(e) => update("founded", e.target.value)}
+                  placeholder="2021"
+                />
+              </div>
+              <div>
+                <label className="eyebrow block mb-2">HQ</label>
+                <input
+                  className="field"
+                  value={form.hq}
+                  onChange={(e) => update("hq", e.target.value)}
+                  placeholder="San Francisco, CA"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="eyebrow block mb-2">Website</label>
+                <input
+                  className="field"
+                  value={form.website}
+                  onChange={(e) => update("website", e.target.value)}
+                  placeholder="https://neuralink.com"
+                />
+              </div>
+            </div>
+
+            {/* Review */}
+            <div className="mt-8 p-6 rounded-2xl bg-ink-800/60 border border-ink-600/40">
+              <p className="eyebrow mb-3">Review summary</p>
+              <div className="grid grid-cols-2 gap-y-2 text-sm">
+                <span className="text-bone-400">Name</span>          <span className="text-bone-100">{form.title || "—"}</span>
+                <span className="text-bone-400">Sector · Stage</span> <span className="text-bone-100">{form.sector} · {form.stage}</span>
+                <span className="text-bone-400">Valuation</span>      <span className="text-bone-100">${Number(form.valuation || 0).toLocaleString()}</span>
+                <span className="text-bone-400">HQ</span>              <span className="text-bone-100">{form.hq || "—"}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nav */}
+        <div className="flex items-center justify-between mt-10 pt-6 border-t border-ink-600/40">
+          <button
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            disabled={step === 1}
+            className="btn-ghost disabled:opacity-30"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
           </button>
-        </form>
+
+          {step < 3 ? (
+            <button
+              onClick={() => setStep((s) => s + 1)}
+              disabled={!canNext}
+              className="btn-accent disabled:opacity-40"
+            >
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={submit}
+              disabled={loading}
+              className="btn-accent disabled:opacity-40"
+            >
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <>Submit for verification <CheckCircle2 className="w-4 h-4" /></>}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

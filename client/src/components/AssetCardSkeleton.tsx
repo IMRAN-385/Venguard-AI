@@ -1,26 +1,33 @@
-"use client";
-
-import React from 'react';
-
-export const AssetCardSkeleton: React.FC = () => {
+export function AssetCardSkeleton() {
   return (
-    <div className="h-[460px] w-full bg-card border border-slate-800/80 rounded-2xl animate-pulse flex flex-col justify-between overflow-hidden">
-      <div className="h-48 w-full bg-slate-900" />
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-        <div className="space-y-2.5">
-          <div className="h-4 bg-slate-800 rounded w-1/3" />
-          <div className="h-5 bg-slate-800 rounded w-3/4" />
-          <div className="h-3 bg-slate-800/80 rounded w-full" />
-          <div className="h-3 bg-slate-800/80 rounded w-5/6" />
-        </div>
-        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/80">
-          <div className="h-7 bg-slate-900 rounded" />
-          <div className="h-7 bg-slate-900 rounded" />
-        </div>
+    <div className="card-item p-4 flex flex-col h-full animate-pulse">
+      {/* Image placeholder */}
+      <div className="aspect-[4/3] rounded-xl bg-ink-700/50 mb-4" />
+
+      {/* Title */}
+      <div className="h-5 bg-ink-700/50 rounded-md w-3/4 mb-3" />
+
+      {/* Description lines */}
+      <div className="space-y-2 mb-4">
+        <div className="h-3 bg-ink-700/40 rounded w-full" />
+        <div className="h-3 bg-ink-700/40 rounded w-5/6" />
       </div>
-      <div className="p-5 pt-0">
-        <div className="h-10 bg-slate-900 rounded-xl w-full" />
+
+      {/* Meta row */}
+      <div className="mt-auto pt-4 border-t border-ink-600/40 grid grid-cols-3 gap-2">
+        <div className="space-y-1.5">
+          <div className="h-2 bg-ink-700/40 rounded w-10" />
+          <div className="h-3 bg-ink-700/60 rounded w-14" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="h-2 bg-ink-700/40 rounded w-8" />
+          <div className="h-3 bg-ink-700/60 rounded w-12" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="h-2 bg-ink-700/40 rounded w-8" />
+          <div className="h-3 bg-ink-700/60 rounded w-10" />
+        </div>
       </div>
     </div>
   );
-};
+}
