@@ -1,4 +1,5 @@
 import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "../config/env";
 import type { Provider as UserProvider } from "../models";
 
@@ -7,7 +8,7 @@ import type { Provider as UserProvider } from "../models";
 export type Provider = UserProvider | "simulation";
 
 // ============================================================
-// Unified LLM interface with Groq + simulation fallback.
+// Unified LLM interface with Groq + Gemini + simulation fallback.
 //
 // Adding a new provider = one branch in `chat()`. The rest of
 // the codebase stays provider-agnostic.
@@ -48,6 +49,14 @@ function getGroq(apiKey: string): Groq {
   return groqClient;
 }
 
+let geminiClient: GoogleGenerativeAI | null = null;
+function getGemini(apiKey: string): GoogleGenerativeAI {
+  if (!geminiClient) {
+    geminiClient = new GoogleGenerativeAI(apiKey);
+  }
+  return geminiClient;
+}
+
 // ------------------------------------------------------------
 // Public: chat
 // ------------------------------------------------------------
@@ -56,6 +65,7 @@ export async function chat(
   opts: ChatOptions = {}
 ): Promise<ChatResult> {
   const provider = opts.provider ?? (env.DEFAULT_LLM_PROVIDER as Provider);
+  console.log("DEBUG provider:", provider, "key set:", !!env.GROQ_API_KEY);
   const start = Date.now();
 
   try {
@@ -86,10 +96,66 @@ export async function chat(
         };
       }
 
+      case "gemini": {
+        const key = opts.userKey || env.GEMINI_API_KEY;
+        if (!key) return simulate(messages, "gemini (no key)", start);
+
+        const modelName = opts.model ?? "gemini-2.0-flash";
+        const gemini    = getGemini(key);
+        const genModel  = gemini.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            temperature:     opts.temperature ?? 0.4,
+            maxOutputTokens: opts.maxTokens ?? 1200,
+            responseMimeType: opts.json ? "application/json" : "text/plain",
+          },
+        });
+
+        const systemMsg = messages.find((m) => m.role === "system")?.content;
+
+        // Gemini chat history excludes the very last user turn —
+        // that gets sent via sendMessage() instead.
+        const nonSystem = messages.filter((m) => m.role !== "system");
+        const historyMsgs = nonSystem.slice(0, -1);
+        const lastMsg = nonSystem[nonSystem.length - 1];
+
+       const history = [];
+
+for (const m of historyMsgs) {
+  if (history.length === 0 && m.role === "assistant") {
+    continue;
+  }
+
+  history.push({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  });
+}
+
+        const chatSession = genModel.startChat({
+          history,
+        });
+
+      const prompt = systemMsg
+  ? `${systemMsg}\n\nUser:\n${lastMsg?.content ?? ""}`
+  : lastMsg?.content ?? "";
+
+const result = await chatSession.sendMessage(prompt);
+const content = result.response.text();
+
+        return {
+          content,
+          model:     modelName,
+          provider:  "gemini",
+          tokens:    result.response.usageMetadata?.totalTokenCount,
+          latencyMs: Date.now() - start,
+          simulated: false,
+        };
+      }
+
       // Placeholders — extend as you add SDKs
       case "openai":
       case "anthropic":
-      case "gemini":
       case "together":
       case "ollama":
         return simulate(messages, `${provider} (not yet wired)`, start);
@@ -98,12 +164,12 @@ export async function chat(
       default:
         return simulate(messages, "simulation", start);
     }
-  } catch (err) {
-    // Never fail the request because of an LLM error — fall back
-    // eslint-disable-next-line no-console
-    console.warn(`⚠️  LLM (${provider}) error — falling back to simulation:`, (err as Error).message);
-    return simulate(messages, `${provider} (fallback)`, start);
-  }
+ } catch (err) {
+  console.error("FULL GEMINI ERROR:");
+  console.error(err);
+
+  return simulate(messages, `${provider} (fallback)`, start);
+}
 }
 
 // ============================================================

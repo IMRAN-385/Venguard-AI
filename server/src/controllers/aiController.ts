@@ -3,6 +3,7 @@ import { AiSettings, Memo, type Provider } from "../models";
 import { chat } from "../services/aiService";
 import { parseFile } from "../services/csvParser";
 import { analyzeFinancials } from "../services/analyzerService";
+import { env } from "../config/env";
 import {
   COPILOT_SYSTEM_PROMPT,
   MEMO_SYSTEM_PROMPT,
@@ -38,8 +39,10 @@ export async function copilot(
     if (!message?.trim()) throw badRequest("Message is required.");
 
     const settings = await getUserSettings(req.user?.sub);
-    const provider = settings?.primaryProvider ?? "groq";
-    const userKey  = settings?.getKey(provider) ?? undefined;
+    const provider = settings?.primaryProvider ?? env.DEFAULT_LLM_PROVIDER;
+    const userKey = provider !== "simulation"
+  ? settings?.getKey(provider) ?? undefined
+  : undefined;
 
     const messages = [
       { role: "system" as const, content: COPILOT_SYSTEM_PROMPT },
@@ -78,8 +81,10 @@ export async function generateMemo(
     if (!company?.trim()) throw badRequest("Company name is required.");
 
     const settings = await getUserSettings(req.user?.sub);
-    const provider = settings?.primaryProvider ?? "groq";
-    const userKey  = settings?.getKey(provider) ?? undefined;
+    const provider = settings?.primaryProvider ?? env.DEFAULT_LLM_PROVIDER;
+  const userKey = provider !== "simulation"
+  ? settings?.getKey(provider) ?? undefined
+  : undefined;
 
     const result = await chat(
       [
@@ -91,7 +96,7 @@ export async function generateMemo(
 
     // Persist audit trail if user is authenticated
     if (req.user?.sub) {
-            await Memo.create({
+      await Memo.create({
         user:      req.user.sub,
         asset:     assetId,
         company, sector, tone, length, notes,
