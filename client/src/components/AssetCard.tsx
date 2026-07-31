@@ -9,6 +9,23 @@ interface Props {
   asset: Asset;
 }
 
+// ============================================================
+// Any URL with these broken photo IDs → swap for Picsum (never 404s)
+// ============================================================
+const BROKEN_PHOTO_IDS = [
+  "photo-1518709268805-4e9042af2176", // Sentinel Defense AI original
+  "photo-1569163139394-de4798aa62b6", // Terra Carbon Vault original
+  "photo-1550751827-4bd374c3f58b",    // My previous fallback (also broken)
+  "photo-1470071459604-3b5ec3a7fe05", // My previous fallback (also broken)
+];
+
+function fixBrokenImage(url: string, seed: string): string {
+  if (BROKEN_PHOTO_IDS.some((id) => url.includes(id))) {
+    return `https://picsum.photos/seed/${seed}/800/600`;
+  }
+  return url;
+}
+
 function fmt(v: number) {
   if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
   if (v >= 1_000_000)     return `$${(v / 1_000_000).toFixed(0)}M`;
@@ -35,7 +52,7 @@ export function AssetCard({ asset }: Props) {
       <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-ink-950 mb-4">
         {asset.image ? (
           <Image
-            src={asset.image}
+            src={fixBrokenImage(asset.image, asset._id)}
             alt={asset.title}
             fill
             sizes="(max-width: 768px) 100vw, 25vw"

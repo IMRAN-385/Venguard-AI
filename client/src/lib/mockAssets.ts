@@ -112,7 +112,7 @@ export const MOCK_ASSETS: Asset[] = [
       "Enhanced weathering of ultramafic rock for gigaton-scale CO₂ removal.",
     longDescription:
       "Terra operates the largest ex-situ enhanced weathering site globally (Oman, 2M tons/year). Signed 15-year offtake with Microsoft, Stripe, and Shopify for $840M cumulative.",
-    image: "https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=800&q=80",
+   image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80",
     riskScore: 34,
     verified: true,
     patents: 6, employees: 94, founded: 2020, hq: "Muscat, OM",
@@ -128,7 +128,7 @@ export const MOCK_ASSETS: Asset[] = [
       "Autonomous swarm coordination for counter-drone and perimeter defense.",
     longDescription:
       "Sentinel's edge-compute swarm software coordinates up to 400 vehicles per operator. DIU contract, active pilots with US Army and NATO.",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80",
     riskScore: 72,
     verified: false,
     patents: 2, employees: 12, founded: 2024, hq: "Austin, TX",
